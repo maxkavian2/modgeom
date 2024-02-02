@@ -1,0 +1,3 @@
+useDynLib(modgeom)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rdpack,reprompt)

@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\n\n#\n# tests the performance of bspline_find_interval_index\n#\n\n\ndegree <- 3\nknots <- seq(from=0, to=1, length.out=10)\nsupport <- bspline_support(degree, knots=knots, native=TRUE)\n\nn <- length(support)-degree-1\ncps <- cbind( runif(n)*20, runif(n)*20, runif(n)*20 )\nrm(n)\n\ns1 <- Sys.time()\nrecompute_control_points(cps, support, degree=degree, native=FALSE)\ns2 <- Sys.time()\n\n#ss1 <- Sys.time()\n#bspline_eval(vals, U=support, native=TRUE)\n#ss2 <- Sys.time()\n\nprint(s2 - s1)\n#print(ss2 - ss1)\n\n",
+    "created" : 1485893200444.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2293388551",
+    "id" : "1EB7F747",
+    "lastKnownWriteTime" : 1485893673,
+    "last_content_update" : 1485893673919,
+    "path" : "~/MAX_DOCUMENTS_debian/R_packages/modgeom/test/recompute_cp_test1.R",
+    "project_path" : "test/recompute_cp_test1.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

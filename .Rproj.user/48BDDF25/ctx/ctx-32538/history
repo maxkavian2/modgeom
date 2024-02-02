@@ -1,0 +1,512 @@
+i=j
+}
+rm(i,j,cq2,cq1,cq1_teams, cq2_teams)
+rm(current.quiniela)
+preserve_indexes <- 1:nrow(data)
+preserve_indexes[discard_index] <- NA
+preserve_indexes <- preserve_indexes[!is.na(preserve_indexes)]
+print("discarded indexes ...")
+print(discard_index)
+data2 <- data[preserve_indexes, ]
+data <- data2
+rm(data2, discard_index, preserve_indexes)
+# data currently stores the filtered data of full-ended quinielas ----------
+# now make a bigger table with all the information
+assemblied_table <- c()
+for (i in 1:nrow(data)) {
+load(as.character(data$filename[i]))
+if(andfunc(as.character(current.quiniela$type) == "ended")){
+#print(current.quiniela)
+dt <- current.quiniela[1:14,1:3]         # deletes the 15 column (special) ******
+year <- format(data$ft[i], format="%Y")
+dt <- cbind(dt, rep(year, times=nrow(dt)) )
+assemblied_table <- rbind(assemblied_table,dt)
+}
+}
+names(assemblied_table)[4] <- "year"
+assemblied_table <- assemblied_table[,c(4,1:3)]
+#assemblied_table <- data.frame(division=factor(rep(NA,times=nrow(assemblied_table))),assemblied_table )
+rm(i,dt,year,current.quiniela, data,files)
+# MAKES a counter translation, according to the as-table ----------
+teams <- read.table("/home/maxkavian/FUTBOL/teams_as_translation.csv", sep=",", header=T,
+fileEncoding = "UTF-8")
+View(teams)
+View(assemblied_table)
+View(teams)
+assemblied_copy <- assemblied_table
+ls1 <- as.character(assemblied_table$local_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$local_team <- teams$local_table[inx]
+ls1 <- as.character(assemblied_table$vis_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$vis_team <- teams$local_table[inx]
+rm(inx,ls1)
+# SAVE into table -----
+save(assemblied_table, file="assemblied_table_")
+View(assemblied_copy)
+View(assemblied_table)
+source('~/FUTBOL_table_collector/assembly.R')
+View(teams)
+View(assemblied_table)
+load("/home/maxkavian/FUTBOL_table_collector/assemblied_table_")
+View(assemblied_table)
+#
+# generates the table assemblied_table, which containes the final quinielas from
+# our data mining from the as diary. This will be used by table_probs.R to enrich the
+# actual database of results
+#
+setwd("/home/maxkavian/FUTBOL_table_collector");
+files <- list.files(pattern="results_*");
+ihf <- 2 # fixed value
+shf <- nchar("results_")+1
+day <- substring(files,shf,shf+1)
+month <- substring(files,shf+ihf+1,shf+ihf+2)
+year <- substring(files,shf+ihf+2+2,shf+ihf+2+5)
+hour <- substring(files,shf+ihf+2+7,shf+ihf+2+8)
+min <- substring(files,shf+ihf+2+10,shf+ihf+2+11)
+sec <- substring(files,shf+ihf+2+13,shf+ihf+2+14)
+dt <- paste(day,month,year,sep="-")
+ht <- paste(hour,min,sec,sep=":")
+t <- paste(dt,ht,sep=" ")
+ft <- strptime(t, "%d-%m-%Y %H:%M:%S", tz = "")
+data <- data.frame(filename = as.character(files),ft)
+or <- order(data$ft)
+data <- data[or,]
+rm(or,day,month,year,hour,min,sec,dt,ht,t,ft)
+rm(ihf, shf)
+andfunc <- function(x){
+r <- T
+xr <- x
+xr[is.na(xr)] <- F
+for(i in 1:length(xr))
+r <- r & xr[i]
+r
+}
+# test if there are entries
+discard_index <- c()
+i = 1
+j = 1
+while(i <= nrow(data) & j <= nrow(data)){
+load(as.character(data$filename[i]))
+cq1 <- current.quiniela
+cq1_teams <- paste(as.character(cq1$local_team), as.character(cq1$vis_team),sep=":")
+#print(paste(i,nrow(data)))
+j=i+1
+if(j <= nrow(data)){
+load(as.character(data$filename[j]))
+cq2 <- current.quiniela
+cq2_teams <- paste(as.character(cq2$local_team), as.character(cq2$vis_team),sep=":")
+}else{
+break;
+}
+while(andfunc(as.character(cq1$type) == "ended") & andfunc(cq1_teams == cq2_teams) &
+j <= nrow(data)){
+discard_index <- c(discard_index, j)
+j = j+1
+#print("")
+#print(as.character(data$filename[i]))
+#print(cq1)
+if(j <= nrow(data)){
+#print(paste(">",j))
+load(as.character(data$filename[j]))
+cq2 <- current.quiniela
+cq2_teams <- paste(as.character(cq2$local_team),
+as.character(cq2$vis_team),sep=":")
+}else{ break; }
+}
+i=j
+}
+rm(i,j,cq2,cq1,cq1_teams, cq2_teams)
+rm(current.quiniela)
+preserve_indexes <- 1:nrow(data)
+preserve_indexes[discard_index] <- NA
+preserve_indexes <- preserve_indexes[!is.na(preserve_indexes)]
+print("discarded indexes ...")
+print(discard_index)
+data2 <- data[preserve_indexes, ]
+data <- data2
+rm(data2, discard_index, preserve_indexes)
+# data currently stores the filtered data of full-ended quinielas ----------
+# now make a bigger table with all the information
+assemblied_table <- c()
+for (i in 1:nrow(data)) {
+load(as.character(data$filename[i]))
+if(andfunc(as.character(current.quiniela$type) == "ended")){
+#print(current.quiniela)
+dt <- current.quiniela[1:14,1:3]         # deletes the 15 column (special) ******
+year <- format(data$ft[i], format="%Y")
+dt <- cbind(dt, rep(year, times=nrow(dt)) )
+assemblied_table <- rbind(assemblied_table,dt)
+}
+}
+names(assemblied_table)[4] <- "year"
+assemblied_table <- assemblied_table[,c(4,1:3)]
+#assemblied_table <- data.frame(division=factor(rep(NA,times=nrow(assemblied_table))),assemblied_table )
+rm(i,dt,year,current.quiniela, data,files)
+View(assemblied_table)
+# MAKES a counter translation, according to the as-table ----------
+teams <- read.table("/home/maxkavian/FUTBOL/teams_as_translation.csv", sep=",", header=T,
+fileEncoding = "UTF-8")
+#copy.table <- assemblied_table
+ls1 <- as.character(assemblied_table$local_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$local_team <- teams$local_table[inx]
+ls1 <- as.character(assemblied_table$vis_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$vis_team <- teams$local_table[inx]
+rm(inx,ls1)
+# SAVE into table -----
+View(assemblied_table)
+source('~/FUTBOL_table_collector/assembly.R')
+View(assemblied_table)
+#
+# generates the table assemblied_table, which containes the final quinielas from
+# our data mining from the as diary. This will be used by table_probs.R to enrich the
+# actual database of results
+#
+setwd("/home/maxkavian/FUTBOL_table_collector");
+files <- list.files(pattern="results_*");
+ihf <- 2 # fixed value
+shf <- nchar("results_")+1
+day <- substring(files,shf,shf+1)
+month <- substring(files,shf+ihf+1,shf+ihf+2)
+year <- substring(files,shf+ihf+2+2,shf+ihf+2+5)
+hour <- substring(files,shf+ihf+2+7,shf+ihf+2+8)
+min <- substring(files,shf+ihf+2+10,shf+ihf+2+11)
+sec <- substring(files,shf+ihf+2+13,shf+ihf+2+14)
+dt <- paste(day,month,year,sep="-")
+ht <- paste(hour,min,sec,sep=":")
+t <- paste(dt,ht,sep=" ")
+ft <- strptime(t, "%d-%m-%Y %H:%M:%S", tz = "")
+data <- data.frame(filename = as.character(files),ft)
+or <- order(data$ft)
+data <- data[or,]
+rm(or,day,month,year,hour,min,sec,dt,ht,t,ft)
+rm(ihf, shf)
+andfunc <- function(x){
+r <- T
+xr <- x
+xr[is.na(xr)] <- F
+for(i in 1:length(xr))
+r <- r & xr[i]
+r
+}
+# test if there are entries
+discard_index <- c()
+i = 1
+j = 1
+while(i <= nrow(data) & j <= nrow(data)){
+load(as.character(data$filename[i]))
+cq1 <- current.quiniela
+cq1_teams <- paste(as.character(cq1$local_team), as.character(cq1$vis_team),sep=":")
+#print(paste(i,nrow(data)))
+j=i+1
+if(j <= nrow(data)){
+load(as.character(data$filename[j]))
+cq2 <- current.quiniela
+cq2_teams <- paste(as.character(cq2$local_team), as.character(cq2$vis_team),sep=":")
+}else{
+break;
+}
+while(andfunc(as.character(cq1$type) == "ended") & andfunc(cq1_teams == cq2_teams) &
+j <= nrow(data)){
+discard_index <- c(discard_index, j)
+j = j+1
+#print("")
+#print(as.character(data$filename[i]))
+#print(cq1)
+if(j <= nrow(data)){
+#print(paste(">",j))
+load(as.character(data$filename[j]))
+cq2 <- current.quiniela
+cq2_teams <- paste(as.character(cq2$local_team),
+as.character(cq2$vis_team),sep=":")
+}else{ break; }
+}
+i=j
+}
+rm(i,j,cq2,cq1,cq1_teams, cq2_teams)
+rm(current.quiniela)
+preserve_indexes <- 1:nrow(data)
+preserve_indexes[discard_index] <- NA
+preserve_indexes <- preserve_indexes[!is.na(preserve_indexes)]
+print("discarded indexes ...")
+print(discard_index)
+data2 <- data[preserve_indexes, ]
+data <- data2
+rm(data2, discard_index, preserve_indexes)
+# data currently stores the filtered data of full-ended quinielas ----------
+# now make a bigger table with all the information
+assemblied_table <- c()
+for (i in 1:nrow(data)) {
+load(as.character(data$filename[i]))
+if(andfunc(as.character(current.quiniela$type) == "ended")){
+#print(current.quiniela)
+dt <- current.quiniela[1:14,1:3]         # deletes the 15 column (special) ******
+year <- format(data$ft[i], format="%Y")
+dt <- cbind(dt, rep(year, times=nrow(dt)) )
+assemblied_table <- rbind(assemblied_table,dt)
+}
+}
+names(assemblied_table)[4] <- "year"
+assemblied_table <- assemblied_table[,c(4,1:3)]
+#assemblied_table <- data.frame(division=factor(rep(NA,times=nrow(assemblied_table))),assemblied_table )
+rm(i,dt,year,current.quiniela, data,files)
+# MAKES a counter translation, according to the as-table ----------
+teams <- read.table("/home/maxkavian/FUTBOL/teams_as_translation.csv", sep=",", header=T,
+fileEncoding = "UTF-8")
+View(assemblied_table)
+View(assemblied_table)
+View(assemblied_table)
+assemblied_copy <-assemblied_data
+assemblied_copy <-assemblied_table
+ls1 <- as.character(assemblied_table$local_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$local_team <- teams$local_table[inx]
+ls1 <- as.character(assemblied_table$vis_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$vis_team <- teams$local_table[inx]
+rm(inx,ls1)
+View(teams)
+View(assemblied_copy)
+View(assemblied_table)
+View(assemblied_table)
+source('~/FUTBOL_table_collector/assembly.R')
+View(assemblied_table)
+source('~/FUTBOL/table_probs.R')
+load("/home/maxkavian/FUTBOL_table_collector/assemblied_table_")
+View(assemblied_table)
+source('~/FUTBOL/table_probs.R')
+source('~/FUTBOL/table_check_v2.R')
+# USER PARAMETERS -------------------------
+require(modgeom)
+# load("data/bspline_parity_turns_data") # comes from the processing in bspline2_test8 example.
+#
+#
+# # c_points[1,3] <- c_points[1,3] +3
+# # c_points[3,2] <- c_points[3,2] -15
+# # c_points[3,1] <- c_points[3,1] +3
+# # c_points[5,1] <- c_points[5,1] +10
+#
+# deg <- 3
+# c_points <- rbind(c_points,c(2.5,-1,1.5))
+load("data/bspline_uz_turns_data") # comes from the processing in bspline2_test8 example.
+deg <- 3
+#c_points <- rbind(c_points,c(2.5,-1,2))
+vec_shift_value=2
+c_points <- rbind( c(0,0,-.5),c(-1,0,-.5),c(-1,1,0), c(2,1,1) ,c(4,1,0),c(4,0,-.5),c(3,0,-.5) )
+for(j in 1:nrow(c_points))
+c_points[j,3] <- c_points[j,3] + vec_shift_value
+u <- seq(from = 0, to = 1, length.out=100)
+points <- interpolate_bspline(u, c_points, degree = deg)
+ref_point <- c(4,1,1)    # the reference observation point
+ref_point_alt <- ref_point[length(ref_point):1]
+# we need to define also the points that will be projected
+n <- 80 # the number of points that will be projected
+dev <- 1  # the deviation in the test points
+cell.points <- cbind( runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev, max=dev) )
+#rm(n)
+rM <- c()
+for(i in 1:n)
+rM <- rbind(rM, ref_point)
+for(i in (n+1):(2*n))
+rM <- rbind(rM, ref_point_alt)
+#cell.points <- rbind(cell.points, cell.points)
+cell.points <- cell.points + rM
+rm(rM,i)
+rm(n)
+# checks the turns function detection ----------------
+ftpt_u <- bspline_footpoint(cell.points, c_points, degree = deg, algorithm="directional",
+tolerance=1e-12, max.iterations = 800, initial.scan.points=nrow(c_points)*100)
+ftpoints <- interpolate_bspline(ftpt_u, c_points, degree = deg)
+multiplier <- 100
+start.time1 <- Sys.time()
+signv <- bspline_parity_sign (
+c_points,
+cell.points,
+fp.u = NULL,
+degree = deg,
+tolerance=1e-15,
+fp.tolerance=1e-12,
+max.iterations = 1500,
+initial.scan.points=nrow(c_points)*multiplier,
+fp.verbose=T
+)
+signv_xor <- signv[[2]]
+u_turn2_data <- signv[[1]]
+end.time1 <- Sys.time()
+end.time1 <- start.time1 - end.time1
+print(paste("procedure lasted: ",-end.time1))
+# GRAPHICS --------------------------------------
+d3graphics <- function (signv, tag, vpar = c(0,0)){
+attach(loaded.data)
+require(rgl)
+cls <- rep("red", times=nrow(cell.points))
+cls[signv] <- "blue"
+par3d(windowRect=c(150, 150, 700, 700))
+rgl.viewpoint(vpar[1], vpar[2])
+par3d(zoom = 1)
+plot3d(R_fuzzy, type="n", xlab="x", ylab="y", zlab="z")
+#points3d(R_fuzzy, col="yellowgreen", size=3, pch=21, bg="red" )
+#points3d(t(as.matrix(ref_point)), col="red", size=8)
+points3d(c_points, col="lightblue4", size=4)
+lines3d(c_points, col="lightblue4", lty="dotted", lwd=.5)
+lines3d(points, col="lightblue4", lwd=2) # points of the spline curve
+sgs <- c();
+for(j in 1:length(u_turn2_data)){
+if(nrow(u_turn2_data[[j]]) > 0){
+tp <- interpolate_bspline (u_turn2_data[[j]]$u.found, c_points, degree=deg)
+clst <- cls[j]
+lines3d( rbind(cell.points[j,],ftpoints[j,]), col=clst, lwd=.01)
+points3d( tp,  col="green", size = 6  )
+}
+}
+points3d( cell.points, col=cls , size = 6 )
+v0 <- interpolate_bspline (0, c_points, degree=deg, derivate=0)
+v1 <- interpolate_bspline (0, c_points, degree=deg, derivate=1)
+v1 <- v1 / (2*sqrt(sum(v1^2)) )
+v1 <- v0 + v1
+arrow3d(v0, v1, 1/20, width=1/4, thickness=1/10)
+rm(tp)
+detach(loaded.data)
+}
+cc <- 0
+sq <- c(0:90,89:1)
+i = sq[sq %% 10 == 0][1]
+cc <- cc+1
+vpar1 <- c(i,i)
+cst <- as.character(cc)
+if(nchar(cst) == 1) cst <- paste("00",cst, sep="")
+if(nchar(cst) == 2) cst <- paste("0",cst, sep="")
+d3graphics(signv_xor, paste("xor_scalar_parity_",cst,sep=""),vpar=vpar1)
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+library(modgeom)
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+args = commandArgs(trailingOnly=TRUE)
+# USER PARAMETERS -------------------------
+deg <- 3
+if(!dir.exists(args[1])) dir.create(args[1])
+setwd(args[4]);
+vec_shift <- as.numeric(args[2])  #2
+graph.dir <-  args[1]   #"test8h"   # check also test8f for the old charts ... they can be used too as a result,
+# and they even have better resolution.
+shift_max <- as.numeric(args[3])
+method.select <- args[5]
+sign.op.select <- args[6]
+seq_vec_shift <- seq(from=0, to=-3, length.out = shift_max)
+vec_shift_value <- seq_vec_shift[vec_shift]
+load("./bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+# eliminates from the load confusing and unecessary data
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+load("./bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+load("/home/maxkavian/MAX_DOCUMENTS_debian/R_scripts/geometrical_modelling/bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+rm(list=ls()[ls() != "c_points" & ls() != "loaded.data" & ls() != deg])
+load("/home/maxkavian/MAX_DOCUMENTS_debian/R_scripts/geometrical_modelling/bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+rm(list=ls()[ls() != "c_points" & ls() != "loaded.data" & ls() != "deg"])
+args = commandArgs(trailingOnly=TRUE)
+# USER PARAMETERS -------------------------
+deg <- 3
+if(!dir.exists(args[1])) dir.create(args[1])
+setwd(args[4]);
+vec_shift <- as.numeric(args[2])  #2
+graph.dir <-  args[1]   #"test8h"   # check also test8f for the old charts ... they can be used too as a result,
+# and they even have better resolution.
+shift_max <- as.numeric(args[3])
+method.select <- args[5]
+sign.op.select <- args[6]
+seq_vec_shift <- seq(from=0, to=-3, length.out = shift_max)
+vec_shift_value <- seq_vec_shift[vec_shift]
+load("/home/maxkavian/MAX_DOCUMENTS_debian/R_scripts/geometrical_modelling/bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+vec_shift
+vec_shift
+rm(list=lsf.str())
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+library(modgeom)
+library(modgeom)
+example("bspline_fit")
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example2.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example2.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example2.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example1.R')
+#
+# sequential spline fitting using
+# bspline_fit
+#
+# USER PARAMETERS -------------------------
+require(modgeom)
+# the normal curve positions for drawing
+position <- seq(from = 0, to = 1, length.out = 800)
+# the control points
+c_point <- t( rbind(c(0,1,2,3,3), c(0,3,3,3,3), c(2,-1,7,3,4)) )
+# the degree
+deg <- 3
+# the number of initial control points of the first guess
+# this makes the result more complex
+initial.control.points<- deg
+# the standard deviation of the randomization
+normal.dev <- .1
+# number of points of the dataset
+rand_position <- runif(300)
+angle <- -20
+zom <- 0.5
+# COMPUTATION ----------------------------
+# the correct model
+R <- interpolate_bspline(position, c_point, degree=deg)
+# the B-spline interpolation for the random
+R_fuzzy <- interpolate_bspline(rand_position, c_point, degree=deg)
+# randomization in the 3 coordinates
+R_fuzzy <- rnorm(length(R_fuzzy), mean = 0, sd = normal.dev) + R_fuzzy
+# TEST FITTING solution ---------------------
+# finds the diagonal of the bounding box according to the current degree
+nc_point <- bounding_diagonal_spline(R_fuzzy, initial.control.points, f=1.4)
+w <- 3
+nc_point <- bspline_fit(R_fuzzy, degree=deg, v=nc_point,
+tolerance=1e-7,
+fp.tolerance=1e-3, step=1, #verbose=FALSE,
+algorithm="directional",
+verb.progress=TRUE,
+reg.factor=1, native=T)
+library(modgeom)
+example(bspline_parity_sign)
+example(bspline_uz_sign)
+example(bspline_parity_turns)
+q();
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_uz_sign_example1.R')
+library(modgeom)
+example("bspline_fit")
+example(bspline_uz_sign)
+library(Riflic)
+library(modgeom)
+example(bspline_fit)
+library(modgeom)
+example("bspline_parity_sign")
+install.packages("tensorA")
+install.packages("tiff")
+install.packages("rgl")
+install.packages("Rdpack")
+rm(list = c(".Random.seed"))

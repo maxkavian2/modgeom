@@ -1,0 +1,17 @@
+Package: modgeom
+Encoding: UTF-8
+Type: Package
+Title: Geometrical modelling using splines
+Version: 0.0.5
+Date: 2017-01-29
+Author: Máximo Sánchez-Aragón
+Maintainer: Máximo Sánchez-Aragón <maxkavian@gmail.com>
+Description: This package provides functions to generate and analyze geometrical models 
+  using splines.
+License: GPL (>= 2)
+Depends: R (>= 4.1.1), tiff (>= 0.1.8), tensorA (>= 0.36.2)
+Suggests: rgl (>= 0.107.14)
+OS_type: Debian (9.0)
+RoxygenNote: 7.2.3
+Imports: Rdpack
+RdMacros: Rdpack

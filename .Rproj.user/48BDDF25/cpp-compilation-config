@@ -1,0 +1,23 @@
+{
+    "args": [
+        "-I/usr/lib/llvm-11/lib/clang/11.0.1/include",
+        "-I/usr/include/c++/10",
+        "-I/usr/include/x86_64-linux-gnu/c++/10",
+        "-I/usr/include/c++/10/backward",
+        "-I/usr/lib/gcc/x86_64-linux-gnu/10/include",
+        "-I/usr/local/include",
+        "-I/usr/include/x86_64-linux-gnu",
+        "-I/usr/include",
+        "-std=gnu++14",
+        "-I/usr/share/R/include",
+        "-DNDEBUG",
+        "-fpic",
+        "-ffile-prefix-map=/home/jranke/git/r-backports/bullseye/r-base-4.1.1=.",
+        "-fstack-protector-strong",
+        "-D_FORTIFY_SOURCE=2"
+    ],
+    "pch": "",
+    "is_cpp": true,
+    "hash": "16357811021564835097",
+    "compiler": "12156611936925777664"
+}

@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#'@title recalculate control points for the spline derivative.\n#'@description \\code{recompute_control_points} computes the control points\n#'for the derivative of a spline.\n#'@details The derivative of a spline built on k-degree polynomials\n#' can be expressed as the same spline built on (k-1) polynomials and\n#' a different set of control points. The new control points (calculated by this function)\n#' depend on the knot sequence and the current control points.\n#'@param \\code{v} control points of the current spline, as a row-vector matrix.\n#'@param \\code{U} the support, as a vector; it must be equal in length than the number of control points.\n#'@param \\code{degree} the degree of the polynomial for the current spline.\n#'@return the control points for the derivative.\n#'@author Máximo Sánchez-Aragón\n#'@export\nrecompute_control_points <- function(v, U, degree=1, native=FALSE){\n\n  if(!native){\n    \n    a <- matrix()\n    for(i in 1:nrow(v)-1){\n      if(i <= 1)\n        a <- ( degree / ( U[i+degree+1] - U[i+1] ) ) * (v[i+1,] - v[i,])\n      else\n        a <- rbind(a, ( degree / ( U[i+degree+1] - U[i+1] ) ) * (v[i+1,] - v[i,]))\n    }\n    row.names(a) <- NULL\n    return(a)\n    \n  }else{\n    \n    .C(\"recompute_control_points\", as.numeric(v),\n                                   as.integer(nrow(v)),\n                                   as.integer(ncol(v)),\n                                   as.numeric(U),\n                                   as.integer(degree)  )\n  }\n}\n\n\n\n\n",
+    "created" : 1485892639601.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3822910679",
+    "id" : "B49F596",
+    "lastKnownWriteTime" : 1485893153,
+    "last_content_update" : 1485893153970,
+    "path" : "~/MAX_DOCUMENTS_debian/R_packages/modgeom/R/recompute_control_points.R",
+    "project_path" : "R/recompute_control_points.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

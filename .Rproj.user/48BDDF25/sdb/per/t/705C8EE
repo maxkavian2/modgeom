@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\n\n#\n# tests the performance of bspline_find_interval_index\n#\n\n\ndegree <- 3\nknots <- seq(from=0, to=1, length.out=100)\nsupport <- bspline_support(degree, knots=knots, native=TRUE)\n\nvals <- seq(from=0, to=1, length.out = 4000)\n\ns1 <- Sys.time()\nbspline_eval(vals, U=support, native=FALSE)\ns2 <- Sys.time()\n\nss1 <- Sys.time()\nbspline_eval(vals, U=support, native=TRUE)\nss2 <- Sys.time()\n\nprint(s2 - s1)\nprint(ss2 - ss1)\n\n",
+    "created" : 1486056234039.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3121668477",
+    "id" : "705C8EE",
+    "lastKnownWriteTime" : 1486056549,
+    "last_content_update" : 1486056549443,
+    "path" : "~/MAX_DOCUMENTS_debian/R_packages/modgeom/test/bspline_eval_test1.R",
+    "project_path" : "test/bspline_eval_test1.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

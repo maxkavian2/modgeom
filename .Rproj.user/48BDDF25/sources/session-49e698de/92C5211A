@@ -1,0 +1,26 @@
+{
+    "id": "92C5211A",
+    "path": "~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_footpoint_example1.R",
+    "project_path": "examples/bspline_footpoint_example1.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1702472650307.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "9,33",
+        "scrollLine": "0",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1702472480,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1702472480,
+    "read_only": false,
+    "read_only_alternatives": []
+}

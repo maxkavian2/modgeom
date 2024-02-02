@@ -1,0 +1,38 @@
+{
+    "type": [
+        2,
+        2,
+        0,
+        1,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        0,
+        1,
+        2
+    ],
+    "data": [
+        "\nR version 4.2.2 Patched (2022-11-10 r83330) -- \"Innocent and Trusting\"\nCopyright (C) 2022 The R Foundation for Statistical Computing\nPlatform: x86_64-pc-linux-gnu (64-bit)\n\nR es un software libre y viene sin GARANTIA ALGUNA.\nUsted puede redistribuirlo bajo ciertas circunstancias.\nEscriba 'license()' o 'licence()' para detalles de distribucion.\n\nR es un proyecto colaborativo con muchos contribuyentes.\nEscriba 'contributors()' para obtener más información y\n'citation()' para saber cómo citar R o paquetes de R en publicaciones.\n\n",
+        "Escriba 'demo()' para demostraciones, 'help()' para el sistema on-line de ayuda,\no 'help.start()' para abrir el sistema de ayuda HTML con su navegador.\nEscriba 'q()' para salir de R.\n\n",
+        "> ",
+        "source(\"~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R\")",
+        "Loading required package: modgeom\n",
+        "Loading required package: tiff\n",
+        "Loading required package: tensorA\n",
+        "\nAttaching package: ‘tensorA’\n\n",
+        "The following object is masked from ‘package:base’:\n\n    norm\n\n",
+        "[1] \"solving footpoints ... \"\n[1] \"finding approximations to turns ...\"\n[1] \"finding turns (for real) ...\"\n[1] \"correcting class on projections ...\"\n[1] \"procedure lasted:  2.17776679992676\"\n",
+        "Loading required package: rgl\n",
+        "Warning message:\n",
+        "'rgl.viewpoint' is deprecated.\nUse 'view3d' instead.\nSee help(\"Deprecated\") \n",
+        "> ",
+        "source(\"~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R\")",
+        "[1] \"solving footpoints ... \"\n[1] \"finding approximations to turns ...\"\n[1] \"finding turns (for real) ...\"\n[1] \"procedure lasted:  1.61244583129883\"\n\nRestarting R session...\n\n"
+    ]
+}

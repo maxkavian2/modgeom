@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "useDynLib(modgeom)\nexportPattern(\"^[[:alpha:]]+\")\n",
+    "created" : 1497815162673.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1905063941",
+    "id" : "176B9996",
+    "lastKnownWriteTime" : 1485705076,
+    "last_content_update" : 1485705076,
+    "path" : "~/MAX_DOCUMENTS_debian/R_packages/modgeom/NAMESPACE",
+    "project_path" : "NAMESPACE",
+    "properties" : {
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_namespace"
+}

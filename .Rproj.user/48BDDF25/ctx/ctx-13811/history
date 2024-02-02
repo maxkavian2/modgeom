@@ -1,0 +1,512 @@
+assemblied_table <- c()
+for (i in 1:nrow(data)) {
+load(as.character(data$filename[i]))
+if(andfunc(as.character(current.quiniela$type) == "ended")){
+#print(current.quiniela)
+dt <- current.quiniela[1:14,1:3]         # deletes the 15 column (special) ******
+year <- format(data$ft[i], format="%Y")
+dt <- cbind(dt, rep(year, times=nrow(dt)) )
+assemblied_table <- rbind(assemblied_table,dt)
+}
+}
+names(assemblied_table)[4] <- "year"
+assemblied_table <- assemblied_table[,c(4,1:3)]
+#assemblied_table <- data.frame(division=factor(rep(NA,times=nrow(assemblied_table))),assemblied_table )
+rm(i,dt,year,current.quiniela, data,files)
+# MAKES a counter translation, according to the as-table ----------
+teams <- read.table("/home/maxkavian/FUTBOL/teams_as_translation.csv", sep=",", header=T,
+fileEncoding = "UTF-8")
+View(assemblied_table)
+View(assemblied_table)
+View(assemblied_table)
+assemblied_copy <-assemblied_data
+assemblied_copy <-assemblied_table
+ls1 <- as.character(assemblied_table$local_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$local_team <- teams$local_table[inx]
+ls1 <- as.character(assemblied_table$vis_team)
+inx <- match(ls1, as.character(teams$as_table))
+#inx <- inx[!is.na(inx)]
+assemblied_table$vis_team <- teams$local_table[inx]
+rm(inx,ls1)
+View(teams)
+View(assemblied_copy)
+View(assemblied_table)
+View(assemblied_table)
+source('~/FUTBOL_table_collector/assembly.R')
+View(assemblied_table)
+source('~/FUTBOL/table_probs.R')
+load("/home/maxkavian/FUTBOL_table_collector/assemblied_table_")
+View(assemblied_table)
+source('~/FUTBOL/table_probs.R')
+source('~/FUTBOL/table_check_v2.R')
+# USER PARAMETERS -------------------------
+require(modgeom)
+# load("data/bspline_parity_turns_data") # comes from the processing in bspline2_test8 example.
+#
+#
+# # c_points[1,3] <- c_points[1,3] +3
+# # c_points[3,2] <- c_points[3,2] -15
+# # c_points[3,1] <- c_points[3,1] +3
+# # c_points[5,1] <- c_points[5,1] +10
+#
+# deg <- 3
+# c_points <- rbind(c_points,c(2.5,-1,1.5))
+load("data/bspline_uz_turns_data") # comes from the processing in bspline2_test8 example.
+deg <- 3
+#c_points <- rbind(c_points,c(2.5,-1,2))
+vec_shift_value=2
+c_points <- rbind( c(0,0,-.5),c(-1,0,-.5),c(-1,1,0), c(2,1,1) ,c(4,1,0),c(4,0,-.5),c(3,0,-.5) )
+for(j in 1:nrow(c_points))
+c_points[j,3] <- c_points[j,3] + vec_shift_value
+u <- seq(from = 0, to = 1, length.out=100)
+points <- interpolate_bspline(u, c_points, degree = deg)
+ref_point <- c(4,1,1)    # the reference observation point
+ref_point_alt <- ref_point[length(ref_point):1]
+# we need to define also the points that will be projected
+n <- 80 # the number of points that will be projected
+dev <- 1  # the deviation in the test points
+cell.points <- cbind( runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev, max=dev) )
+#rm(n)
+rM <- c()
+for(i in 1:n)
+rM <- rbind(rM, ref_point)
+for(i in (n+1):(2*n))
+rM <- rbind(rM, ref_point_alt)
+#cell.points <- rbind(cell.points, cell.points)
+cell.points <- cell.points + rM
+rm(rM,i)
+rm(n)
+# checks the turns function detection ----------------
+ftpt_u <- bspline_footpoint(cell.points, c_points, degree = deg, algorithm="directional",
+tolerance=1e-12, max.iterations = 800, initial.scan.points=nrow(c_points)*100)
+ftpoints <- interpolate_bspline(ftpt_u, c_points, degree = deg)
+multiplier <- 100
+start.time1 <- Sys.time()
+signv <- bspline_parity_sign (
+c_points,
+cell.points,
+fp.u = NULL,
+degree = deg,
+tolerance=1e-15,
+fp.tolerance=1e-12,
+max.iterations = 1500,
+initial.scan.points=nrow(c_points)*multiplier,
+fp.verbose=T
+)
+signv_xor <- signv[[2]]
+u_turn2_data <- signv[[1]]
+end.time1 <- Sys.time()
+end.time1 <- start.time1 - end.time1
+print(paste("procedure lasted: ",-end.time1))
+# GRAPHICS --------------------------------------
+d3graphics <- function (signv, tag, vpar = c(0,0)){
+attach(loaded.data)
+require(rgl)
+cls <- rep("red", times=nrow(cell.points))
+cls[signv] <- "blue"
+par3d(windowRect=c(150, 150, 700, 700))
+rgl.viewpoint(vpar[1], vpar[2])
+par3d(zoom = 1)
+plot3d(R_fuzzy, type="n", xlab="x", ylab="y", zlab="z")
+#points3d(R_fuzzy, col="yellowgreen", size=3, pch=21, bg="red" )
+#points3d(t(as.matrix(ref_point)), col="red", size=8)
+points3d(c_points, col="lightblue4", size=4)
+lines3d(c_points, col="lightblue4", lty="dotted", lwd=.5)
+lines3d(points, col="lightblue4", lwd=2) # points of the spline curve
+sgs <- c();
+for(j in 1:length(u_turn2_data)){
+if(nrow(u_turn2_data[[j]]) > 0){
+tp <- interpolate_bspline (u_turn2_data[[j]]$u.found, c_points, degree=deg)
+clst <- cls[j]
+lines3d( rbind(cell.points[j,],ftpoints[j,]), col=clst, lwd=.01)
+points3d( tp,  col="green", size = 6  )
+}
+}
+points3d( cell.points, col=cls , size = 6 )
+v0 <- interpolate_bspline (0, c_points, degree=deg, derivate=0)
+v1 <- interpolate_bspline (0, c_points, degree=deg, derivate=1)
+v1 <- v1 / (2*sqrt(sum(v1^2)) )
+v1 <- v0 + v1
+arrow3d(v0, v1, 1/20, width=1/4, thickness=1/10)
+rm(tp)
+detach(loaded.data)
+}
+cc <- 0
+sq <- c(0:90,89:1)
+i = sq[sq %% 10 == 0][1]
+cc <- cc+1
+vpar1 <- c(i,i)
+cst <- as.character(cc)
+if(nchar(cst) == 1) cst <- paste("00",cst, sep="")
+if(nchar(cst) == 2) cst <- paste("0",cst, sep="")
+d3graphics(signv_xor, paste("xor_scalar_parity_",cst,sep=""),vpar=vpar1)
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+library(modgeom)
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+args = commandArgs(trailingOnly=TRUE)
+# USER PARAMETERS -------------------------
+deg <- 3
+if(!dir.exists(args[1])) dir.create(args[1])
+setwd(args[4]);
+vec_shift <- as.numeric(args[2])  #2
+graph.dir <-  args[1]   #"test8h"   # check also test8f for the old charts ... they can be used too as a result,
+# and they even have better resolution.
+shift_max <- as.numeric(args[3])
+method.select <- args[5]
+sign.op.select <- args[6]
+seq_vec_shift <- seq(from=0, to=-3, length.out = shift_max)
+vec_shift_value <- seq_vec_shift[vec_shift]
+load("./bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+# eliminates from the load confusing and unecessary data
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+load("./bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+load("/home/maxkavian/MAX_DOCUMENTS_debian/R_scripts/geometrical_modelling/bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+rm(list=ls()[ls() != "c_points" & ls() != "loaded.data" & ls() != deg])
+load("/home/maxkavian/MAX_DOCUMENTS_debian/R_scripts/geometrical_modelling/bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+rm(list=ls()[ls() != "c_points" & ls() != "loaded.data" & ls() != "deg"])
+args = commandArgs(trailingOnly=TRUE)
+# USER PARAMETERS -------------------------
+deg <- 3
+if(!dir.exists(args[1])) dir.create(args[1])
+setwd(args[4]);
+vec_shift <- as.numeric(args[2])  #2
+graph.dir <-  args[1]   #"test8h"   # check also test8f for the old charts ... they can be used too as a result,
+# and they even have better resolution.
+shift_max <- as.numeric(args[3])
+method.select <- args[5]
+sign.op.select <- args[6]
+seq_vec_shift <- seq(from=0, to=-3, length.out = shift_max)
+vec_shift_value <- seq_vec_shift[vec_shift]
+load("/home/maxkavian/MAX_DOCUMENTS_debian/R_scripts/geometrical_modelling/bspline2_test8_data") # comes from the processing in bspline2_test8 example.
+loaded.data <- list(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+rm(R_fuzzy, proj_points, foot_points, u, points, projection_angles)
+names(loaded.data) <- c("R_fuzzy", "proj_points", "foot_points", "u", "points", "projection_angles")
+vec_shift
+vec_shift
+rm(list=lsf.str())
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+library(modgeom)
+library(modgeom)
+example("bspline_fit")
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example2.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example2.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example2.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_fit_example1.R')
+#
+# sequential spline fitting using
+# bspline_fit
+#
+# USER PARAMETERS -------------------------
+require(modgeom)
+# the normal curve positions for drawing
+position <- seq(from = 0, to = 1, length.out = 800)
+# the control points
+c_point <- t( rbind(c(0,1,2,3,3), c(0,3,3,3,3), c(2,-1,7,3,4)) )
+# the degree
+deg <- 3
+# the number of initial control points of the first guess
+# this makes the result more complex
+initial.control.points<- deg
+# the standard deviation of the randomization
+normal.dev <- .1
+# number of points of the dataset
+rand_position <- runif(300)
+angle <- -20
+zom <- 0.5
+# COMPUTATION ----------------------------
+# the correct model
+R <- interpolate_bspline(position, c_point, degree=deg)
+# the B-spline interpolation for the random
+R_fuzzy <- interpolate_bspline(rand_position, c_point, degree=deg)
+# randomization in the 3 coordinates
+R_fuzzy <- rnorm(length(R_fuzzy), mean = 0, sd = normal.dev) + R_fuzzy
+# TEST FITTING solution ---------------------
+# finds the diagonal of the bounding box according to the current degree
+nc_point <- bounding_diagonal_spline(R_fuzzy, initial.control.points, f=1.4)
+w <- 3
+nc_point <- bspline_fit(R_fuzzy, degree=deg, v=nc_point,
+tolerance=1e-7,
+fp.tolerance=1e-3, step=1, #verbose=FALSE,
+algorithm="directional",
+verb.progress=TRUE,
+reg.factor=1, native=T)
+library(modgeom)
+example(bspline_parity_sign)
+example(bspline_uz_sign)
+example(bspline_parity_turns)
+q();
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R')
+source('~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_uz_sign_example1.R')
+library(modgeom)
+example("bspline_fit")
+example(bspline_uz_sign)
+library(Riflic)
+library(modgeom)
+example(bspline_fit)
+library(modgeom)
+example("bspline_parity_sign")
+library(modgeom)
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_eval_example1.R")
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/R/bspline_solve.R")
+example("bspline_solve")
+library(modgeom)
+# USER PARAMETERS -------------------------
+require(modgeom)
+load("inst/extdata/bspline_uz_turns_data") # comes from the processing in bspline2_test8 example.
+deg <- 3
+#c_points <- rbind(c_points,c(2.5,-1,2))
+vec_shift_value=2
+c_points <- rbind( c(0,0,-.5),c(-1,0,-.5),c(-1,1,0), c(2,1,1) ,c(4,1,0),c(4,0,-.5),c(3,0,-.5) )
+for(j in 1:nrow(c_points))
+c_points[j,3] <- c_points[j,3] + vec_shift_value
+u <- seq(from = 0, to = 1, length.out=100)
+points <- interpolate_bspline(u, c_points, degree = deg)
+ref_point <- c(4,1,1)    # the reference observation point
+ref_point_alt <- ref_point[length(ref_point):1]
+# we need to define also the points that will be projected
+n <- 200 # the number of points that will be projected
+dev <- 1  # the deviation in the test points
+cell.points <- cbind( runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev, max=dev) )
+#rm(n)
+rM <- c()
+for(i in 1:n)
+rM <- rbind(rM, ref_point)
+for(i in (n+1):(2*n))
+rM <- rbind(rM, ref_point_alt)
+#cell.points <- rbind(cell.points, cell.points)
+cell.points <- cell.points + rM
+rm(rM,i)
+rm(n)
+# checks the turns function detection ----------------
+ftpt_u <- bspline_footpoint(cell.points, c_points, degree = deg, algorithm="directional",
+tolerance=1e-12, max.iterations = 800, initial.scan.points=nrow(c_points)*100)
+ftpoints <- interpolate_bspline(ftpt_u, c_points, degree = deg)
+multiplier <- 100
+start.time1 <- Sys.time()
+install.packages(c("gam", "pracma", "Rdpack", "rgeos", "rgl", "tiff"))
+library(modgeom)
+# USER PARAMETERS -------------------------
+require(modgeom)
+load("inst/extdata/bspline_parity_turns_data")
+deg <- 3
+c_points <- rbind(c_points,c(2.5,-1,1.5))
+u <- seq(from = 0, to = 1, length.out=100)
+points <- interpolate_bspline(u, c_points, degree = deg)
+ref_point <- c(4,1,1)    # the reference observation point
+ref_point_alt <- ref_point[length(ref_point):1]
+# we need to define also the points that will be projected
+n <- 50 # the number of points that will be projected
+dev <- 1  # the deviation in the test points
+cell.points <- cbind( runif(2*n, min=-dev, max=dev),
+runif(2*n, min=-dev*2, max=dev*2),
+runif(2*n, min=-dev, max=dev) )
+#rm(n)
+rM <- c()
+for(i in 1:n)
+rM <- rbind(rM, ref_point)
+for(i in (n+1):(2*n))
+rM <- rbind(rM, ref_point_alt)
+#cell.points <- rbind(cell.points, cell.points)
+cell.points <- cell.points + rM
+rm(rM,i)
+rm(n)
+# checks the turns function detection ----------------
+ftpt_u <- bspline_footpoint(cell.points, c_points, degree = deg, algorithm="directional",
+tolerance=1e-12, max.iterations = 800, initial.scan.points=nrow(c_points)*100)
+ftpoints <- interpolate_bspline(ftpt_u, c_points, degree = deg)
+multiplier <- 300
+start.time1 <- Sys.time()
+u_turn2_data <- bspline_parity_turns( # u_turn2_data
+c_points,
+cell.points,
+#ref_vec,   # TEST argument
+footpoints = ftpoints,
+degree = deg,
+tolerance=1e-10,
+max.iterations = 500,
+initial.scan.points=nrow(c_points)*multiplier,
+fp.verbose=TRUE
+)
+end.time1 <- Sys.time()
+end.time1 <- start.time1 - end.time1
+print(paste("procedure lasted: ",-end.time1))
+transform.T <- function(U){
+"
+Transforms matrix of row-vectors U in a equivalent array-tensor for cross-product
+multiplication.
+"
+if( ncol(U) != 3 ) stop("[Max] number of columns must be three")
+M <- array(rep(NA, times=prod(dim(U))), dim=c(dim(U)[2],dim(U)[2],dim(U)[1]))
+z <- rep(0, times=dim(U)[1])
+for(i in 1:dim(U)[2]) M[i,i,] <- z # sets the zero diagonal
+M[2,3,] <- U[,1]
+M[3,2,] <- -U[,1]
+M[3,1,] <- U[,2]
+M[1,3,] <- -U[,2]
+M[1,2,] <- U[,3]
+M[2,1,] <- -U[,3]
+M
+}
+# this function computes the matrix of cross products as a tensor product
+get.crossp.M <- function(u,v){
+U <- transform.T(u)
+uT <- to.tensor(U)
+dim(uT) <- c(x=3,y=3,z=dim(U)[3])
+vT <- to.tensor(v)
+dim(vT) <- c(z=dim(v)[1],x=3)
+R4 <- einstein.tensor(uT, vT, by="z")
+to.matrix.tensor(R4, j="y", i="z")
+}
+# this function gets the matrix dot product as a tensor product
+get.dotp.M <- function(m, p){
+A <- to.tensor( m )
+dim(A) <- c(z=nrow(p),x=3 )
+B <- to.tensor( p )
+dim(B) <- c(z=nrow(p), x=3)
+as.vector(to.matrix.tensor(einstein.tensor(A, B, by="z"), i="z"))
+#einstein.tensor(A, B, by="z.i")
+}
+# gets the dot product sign
+vp   <- interpolate_bspline(ftpt_u, c_points, degree=deg, derivate=0, unitary=F)
+vpd  <- interpolate_bspline(ftpt_u, c_points, degree=deg, derivate=1, unitary=F)
+vpdd <- interpolate_bspline(ftpt_u, c_points, degree=deg, derivate=2, unitary=F)
+p   <- ftpoints - cell.points#cell.points
+pd_x_pdd <- get.crossp.M(vpd, vpdd)
+fd  <- get.dotp.M(pd_x_pdd, p)
+# tries to find the sign -----------------------------
+signv_1 <- c()
+signv_2 <- c()
+# signv_xor <- c()
+# pd <- interpolate_bspline(ftpt_u, c_points, degree=deg, derivate = 1)
+# pa <- ftpoints - cell.points
+signv_1 <- fd >= 0
+for(i in 1:length(u_turn2_data) ){
+ct <- u_turn2_data[[i]]$u.found #u_turn2_data[[i]]$u.found
+signv_2[i] <- length(ct[ct <= ftpt_u[i]]) %% 2 == 1
+#signv_xor[i] <- xor(vp < 0, length(ct[ct < ftpt_u[i]]) %% 2 == 1) # finds the number of turns before the projection point
+}
+signv_xor <- xor(signv_1, signv_2)
+# GRAPHICS --------------------------------------
+d3graphics <- function (signv, tag, vpar = c(0,0)){
+attach(loaded.data)
+require(rgl)
+cls <- rep("red", times=nrow(cell.points))
+cls[signv] <- "blue"
+plot3d(R_fuzzy, type="n", xlab="x", ylab="y", zlab="z")
+#points3d(R_fuzzy, col="yellowgreen", size=3, pch=21, bg="red" )
+par3d(windowRect=c(150, 150, 700, 700))
+rgl.viewpoint(vpar[1], vpar[2])
+#par3d(zoom = 1)
+#points3d(t(as.matrix(ref_point)), col="red", size=8)
+points3d(c_points, col="lightblue4", size=4)
+lines3d(c_points, col="lightblue4", lty="dotted", lwd=.5)
+lines3d(points, col="lightblue4", lwd=2) # points of the spline curve
+sgs <- c();
+for(j in 1:length(u_turn2_data)){
+if(nrow(u_turn2_data[[j]]) > 0){
+tp <- interpolate_bspline (u_turn2_data[[j]]$u.found, c_points, degree=deg)
+clst <- cls[j]
+lines3d( rbind(cell.points[j,],ftpoints[j,]), col=clst, lwd=.01)
+points3d( tp,  col="green", size = 6  )
+}
+}
+points3d( cell.points, col=cls , size = 6 )
+v0 <- interpolate_bspline (0, c_points, degree=deg, derivate=0)
+v1 <- interpolate_bspline (0, c_points, degree=deg, derivate=1)
+v1 <- v1 / (2*sqrt(sum(v1^2)) )
+v1 <- v0 + v1
+arrow3d(v0, v1, 1/20, width=1/4, thickness=1/10)
+rm(tp)
+detach(loaded.data)
+}
+cc <- 0
+sq <- 50 #c(0:90,89:1)
+for(i in sq[sq %% 1 == 0] ){
+cc <- cc+1
+vpar1 <- c(i,i)
+cst <- as.character(cc)
+if(nchar(cst) == 1) cst <- paste("00",cst, sep="")
+if(nchar(cst) == 2) cst <- paste("0",cst, sep="")
+#d3graphics(signv_1, paste("only_scalar_",cst,sep=""), vpar=vpar1)
+#d3graphics(signv_2, paste("only_parity_",cst,sep=""),vpar=vpar1)
+d3graphics(signv_xor, paste("xor_scalar_parity_",cst,sep=""),vpar=vpar1)
+}
+example("bspline_parity_turns")
+example("bspline_simple_turns")
+example("bspline_footpoint")
+example("bspline_fit")
+example("bspline_eval")
+example("projection_anges")
+example("projection_angles")
+example("bspline_parity_turns")
+example("bspline_parity_sign")
+example("bspline_uz_sign")
+install.packages("tiff")
+install.packages("tensorA")
+library(modgeom)
+example(bspline)
+example(bspline_eval)
+example("bspline_fit")
+example("bspline_footpoint")
+example("bspline_uz_sign")
+example("interpolate_bspline")
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_uz_sign_example1.R")
+example(bspline_uz_sign)
+example(bspline_parity_turns)
+example(bspline_parity_sign)
+library(modgeom)
+library(modgeom)
+example(bspline_uz_sign)
+example("bspline_uz_sign")
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_uz_sign_example1.R")
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_uz_sign_example1.R")
+example("bspline_uz_sign")
+library(modgeom)
+?data
+# USER PARAMETERS -------------------------
+require(modgeom)
+data("inst/extdata/bspline_uz_turns_data")
+data("./inst/extdata/bspline_uz_turns_data")
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_uz_sign_example1.R")
+# USER PARAMETERS -------------------------
+require(modgeom)
+loadad.data = data("./inst/extdata/bspline_uz_turns_data")
+library(modgeom)
+example("bspline_uz_sign")
+library(modgeom)
+library(modgeom)
+example("bspline_uz_sign")
+example("bspline_parity_turns")
+example("bspline_simple_sign")
+example("bspline_simple")
+example("bspline_simple_turns")
+example("bspline_")
+example("bspline_parity_sign")
+library(modgeom)
+library(modgeom)
+# USER PARAMETERS -------------------------
+require(modgeom)
+# comes from the processing in bspline2_test8 example.
+# temporary libPath selection
+load(paste(.libPaths()[1],"/modgeom/extdata/bspline_uz_turns_data",sep=""))
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R")
+source("~/MAX_DOCUMENTS_debian/R_packages/modgeom/examples/bspline_parity_sign_example1.R")
